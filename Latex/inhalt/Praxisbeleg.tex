@@ -1,0 +1,58 @@
+\chapter{Einleitung und Problemstellung}
+In vielen mittelständischen Unternehmen wachsen IT-Strukturen historisch und oft ungeordnet. Auch im vorliegenden Betrieb erfolgt die Verwaltung sensibler Kundendaten aktuell auf Basis einer dezentralen Dateistruktur. Die Daten liegen als lose Sammlung unterschiedlicher Dateiformate auf einem Network Attached Storage (NAS). 
+
+Diese Form der Datenhaltung führt im Arbeitsalltag zu erheblichen Problemen. Es existieren Redundanzen, da Mitarbeiter lokale Kopien anlegen, und die Konsistenz der Daten ist nicht gewährleistet. Zudem fehlt eine granulare Rechteverwaltung; der Zugriff auf das NAS ist oft nur pauschal ("Alles oder Nichts") regelbar. Eine gleichzeitige Bearbeitung derselben Datensätze führt regelmäßig zu Konflikten.
+
+Ziel dieser Projektarbeit war daher die Ablösung des bestehenden Systems durch eine zentrale, datenbankgestützte Anwendung. Die neue Lösung soll eine strikte Trennung von Datenhaltung und Präsentation (Client-Server-Architektur) aufweisen, plattformunabhängig nutzbar sein (Windows, Linux, Mobile) und modernen Sicherheitsstandards entsprechen.
+
+\chapter{Analyse und Konzeption}
+
+\section{Ist-Analyse und Datenbereinigung}
+Der erste Schritt der Projektarbeit bestand in einer umfassenden Ist-Analyse der auf dem NAS vorhandenen Daten. Dabei wurde festgestellt, dass Kundendaten in diversen Excel-Tabellen, Textdokumenten und CSV-Exporten verstreut waren. 
+Im Rahmen der Migration wurden diese Daten zunächst gesichtet und konsolidiert. Duplikate wurden entfernt und fehlende Attribute, soweit möglich, manuell nachgepflegt. Diese Bereinigung war essenziell, um eine saubere Basis für den Import in das neue relationale Datenbankschema zu schaffen.
+
+\section{Soll-Konzept und Architektur}
+Um die Anforderungen an Plattformunabhängigkeit und Sicherheit zu erfüllen, wurde eine dreischichtige Architektur (Three-Tier-Architecture) entworfen.
+
+\bild[0.8]{architektur_placeholder}{Grobe Systemarchitektur der Kundendatenverwaltung}{fig:architektur}
+
+Wie in \autoref{fig:architektur} dargestellt, bildet ein zentraler Server das Backend. Clients kommunizieren nicht direkt mit der Datenbank, sondern ausschließlich über definierte Schnittstellen (API). Dies ermöglicht eine zentrale Kontrolle der Geschäftslogik und der Sicherheitsregeln.
+
+\chapter{Technische Umsetzung}
+
+\section{Backend und Infrastruktur}
+Als Betriebssystem für den Server wurde \textbf{Ubuntu Server 22.04} gewählt, da es eine hohe Stabilität und langfristigen Support (LTS) bietet. Um die Anwendungskomponenten isoliert und wartbar zu halten, wird die Software in \textbf{Docker}-Containern betrieben.
+
+\subsection{Datenhaltung mit PostgreSQL}
+Die Kernkomponente der Datenhaltung ist eine \textbf{PostgreSQL}-Datenbank\cite{PostgreSQL}. Sie bietet robuste Mechanismen zur Wahrung der Datenintegrität. Ein entscheidendes Feature für dieses Projekt ist die \emph{Row Level Security} (RLS). Damit wird sichergestellt, dass Datenbankabfragen je nach Rolle des angemeldeten Benutzers (z.B. Praktikant, Mitarbeiter, Geschäftsführung) unterschiedliche Ergebnisse liefern. Ein Praktikant sieht beispielsweise nur Basisdaten, während die Geschäftsführung Zugriff auf alle Historien hat.
+
+\subsection{API-Entwicklung mit FastAPI}
+Die Schnittstelle zwischen Datenbank und Frontend wurde mit \textbf{Python} und dem Framework \textbf{FastAPI} realisiert\cite{FastAPI}. FastAPI zeichnet sich durch hohe Performance und automatische Dokumentation der Endpunkte aus.
+Die Anwendung wird durch einen \textbf{Gunicorn}-Applikationsserver bereitgestellt, der wiederum vier \textbf{Uvicorn}-Worker-Prozesse verwaltet, um parallele Anfragen effizient abzuarbeiten.
+
+Vorgeschaltet ist ein \textbf{Nginx} Webserver, der als Reverse Proxy fungiert. Er übernimmt die SSL/TLS-Terminierung unter Verwendung selbstsignierter Zertifikate, da der Server nur intern oder via VPN erreichbar ist, und leitet die Anfragen an den Gunicorn-Server weiter.
+
+\section{Frontend-Entwicklung mit Flutter}
+Für die Benutzeroberfläche fiel die Wahl auf \textbf{Flutter}. Dieses Framework ermöglicht es, aus einer einzigen Codebasis native Anwendungen für iOS, Android, Windows und Linux zu kompilieren\cite{FlutterDev}.
+
+\bild[0.7]{frontend_placeholder}{Screenshot der Benutzeroberfläche (Maske Kundendaten)}{fig:frontend}
+
+Die App kommuniziert über REST-Calls mit dem Backend. \autoref{fig:frontend} zeigt die Eingabemaske für Kundendaten. Die Validierung der Eingaben findet sowohl clientseitig (für direktes Feedback) als auch serverseitig (aus Sicherheitsgründen) statt.
+
+\section{Sicherheitskonzept}
+Sicherheit war ein zentraler Aspekt der Entwicklung. Da Kundendaten schützenswert sind, wurden mehrere Schutzmaßnahmen implementiert:
+
+\begin{enumerate}
+    \item \textbf{Netzwerkisolierung:} Der Server ist nicht öffentlich im Internet erreichbar. Der Zugriff erfolgt ausschließlich aus dem lokalen Firmennetzwerk oder über einen gesicherten VPN-Tunnel.
+    \item \textbf{Verschlüsselung (Data at Rest):} Die SSD des Servers ist vollständig mit \textbf{LUKS} (Linux Unified Key Setup) verschlüsselt. Dies schützt die Daten bei physikalischem Diebstahl der Hardware.
+    \item \textbf{Authentifizierung:} Die Anmeldung am System erfolgt über JSON Web Tokens (JWT). Nach erfolgreichem Login erhält der Client ein Token, das bei jeder Anfrage im Header mitgesendet werden muss.
+\end{enumerate}
+
+\bild[0.6]{security_placeholder}{Schematischer Ablauf der JWT-Authentifizierung}{fig:security}
+
+Der Ablauf der Authentifizierung ist in \autoref{fig:security} visualisiert. Das Token enthält dabei auch die Rolleninformationen, die für die Row Level Security in der Datenbank benötigt werden.
+
+\chapter{Zusammenfassung und Ausblick}
+Im Rahmen dieses Praxisbelegs wurde erfolgreich eine moderne Kundendatenverwaltung implementiert. Die Transformation von unstrukturierten Dateien auf dem NAS hin zu einer relationalen Datenbank mit PostgreSQL hat die Datenqualität massiv erhöht. Durch den Einsatz von Flutter können Mitarbeiter nun flexibel von verschiedenen Endgeräten auf die Daten zugreifen, ohne dass die Sicherheit durch die VPN-Pflicht und Verschlüsselung vernachlässigt wird.
+
+Zukünftige Erweiterungen könnten eine automatisierte Backup-Strategie in die Cloud (unter Einhaltung der DSGVO) oder ein Dashboard zur visuellen Auswertung der Kundendaten umfassen. Das System ist durch den Einsatz von Docker und Microservices-Ansätzen dafür bestens vorbereitet.
