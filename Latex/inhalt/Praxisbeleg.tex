@@ -14,7 +14,7 @@ Im Rahmen der Migration wurden diese Daten zunächst gesichtet und konsolidiert.
 \section{Soll-Konzept und Architektur}
 Um die Anforderungen an Plattformunabhängigkeit und Sicherheit zu erfüllen, wurde eine dreischichtige Architektur (Three-Tier-Architecture) entworfen.
 
-\bild[0.8]{architektur_placeholder}{Grobe Systemarchitektur der Kundendatenverwaltung}{fig:architektur}
+\bild[0.8]{architektur}{Grobe Systemarchitektur der Kundendatenverwaltung}{fig:architektur}
 
 Wie in \autoref{fig:architektur} dargestellt, bildet ein zentraler Server das Backend. Clients kommunizieren nicht direkt mit der Datenbank, sondern ausschließlich über definierte Schnittstellen (API). Dies ermöglicht eine zentrale Kontrolle der Geschäftslogik und der Sicherheitsregeln.
 
@@ -35,7 +35,7 @@ Vorgeschaltet ist ein \textbf{Nginx} Webserver, der als Reverse Proxy fungiert. 
 \section{Frontend-Entwicklung mit Flutter}
 Für die Benutzeroberfläche fiel die Wahl auf \textbf{Flutter}. Dieses Framework ermöglicht es, aus einer einzigen Codebasis native Anwendungen für iOS, Android, Windows und Linux zu kompilieren\cite{FlutterDev}.
 
-\bild[0.7]{frontend_placeholder}{Screenshot der Benutzeroberfläche (Maske Kundendaten)}{fig:frontend}
+\bild[0.7]{frontend}{Screenshot der Benutzeroberfläche (Maske Kundendaten)}{fig:frontend}
 
 Die App kommuniziert über REST-Calls mit dem Backend. \autoref{fig:frontend} zeigt die Eingabemaske für Kundendaten. Die Validierung der Eingaben findet sowohl clientseitig (für direktes Feedback) als auch serverseitig (aus Sicherheitsgründen) statt.
 
@@ -48,7 +48,7 @@ Sicherheit war ein zentraler Aspekt der Entwicklung. Da Kundendaten schützenswe
     \item \textbf{Authentifizierung:} Die Anmeldung am System erfolgt über JSON Web Tokens (JWT). Nach erfolgreichem Login erhält der Client ein Token, das bei jeder Anfrage im Header mitgesendet werden muss.
 \end{enumerate}
 
-\bild[0.6]{security_placeholder}{Schematischer Ablauf der JWT-Authentifizierung}{fig:security}
+\bild[0.6]{security}{Schematischer Ablauf der JWT-Authentifizierung}{fig:security}
 
 Der Ablauf der Authentifizierung ist in \autoref{fig:security} visualisiert. Das Token enthält dabei auch die Rolleninformationen, die für die Row Level Security in der Datenbank benötigt werden.
 
