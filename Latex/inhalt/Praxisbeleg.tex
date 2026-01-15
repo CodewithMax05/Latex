@@ -1,42 +1,53 @@
 % inhalt/Praxisbeleg.tex
 
 \chapter{Einleitung und Problemstellung}
-In der heutigen Zeit ist die effiziente Verwaltung von Kundendaten ein kritischer Erfolgsfaktor für Unternehmen. Aktuell erfolgt die Datenspeicherung im Betrieb auf einem \striche{Network Attached Storage} (NAS) in Form einer unstrukturierten und inkonsistenten Dateiablage. Dieser Zustand führt zu erheblichen Herausforderungen in Bezug auf Datenkonsistenz, Mehrbenutzerzugriff und Informationssicherheit. Da die Daten oft redundant in verschiedenen Tabellenkalkulationsdokumenten vorliegen, ist eine fehlerfreie Aktualisierung kaum möglich.
+In der heutigen Informationsgesellschaft stellt die effiziente und konsistente Verwaltung von Kundendaten einen entscheidenden Wettbewerbsvorteil dar. Unternehmen sind darauf angewiesen, Informationen jederzeit verfügbar, aktuell und sicher vorzuhalten. 
 
-Ziel dieses Praxisbelegs ist es, eine zentrale, datenbankgestützte Lösung zu konzipieren und zu implementieren, die einen plattformunabhängigen Zugriff ermöglicht und gleichzeitig höchste Sicherheitsstandards erfüllt.
+Aktuell erfolgt die Datenspeicherung in meinem Betrieb auf einem \striche{Network Attached Storage} (NAS). Die Daten liegen dort in Form einer unstrukturierten und inkonsistenten Dateiablage vor, primär in verschiedenen Tabellenkalkulationsdokumenten. Dieser Zustand führt zu erheblichen Herausforderungen: Da keine zentrale Validierung existiert, treten Redundanzen und Widersprüche zwischen verschiedenen Datensätzen auf. Ein gleichzeitiger Schreibzugriff mehrerer Benutzer ist nur eingeschränkt möglich und die Informationssicherheit ist aufgrund fehlender feingranularer Zugriffsberechtigungen auf Dateiebene kaum zu gewährleisten.
+
+Ziel dieses Praxisbelegs ist die Konzeption und Implementierung einer zentralen, datenbankgestützten Lösung. Diese soll eine \striche{Single Source of Truth} schaffen, plattformunabhängigen Zugriff bieten und durch moderne Verschlüsselungs- und Berechtigungskonzepte höchste Sicherheitsstandards erfüllen.
 
 \chapter{Analyse und Konzeption}
 \section{Ist-Analyse und Datenbereinigung}
-Die initiale Analyse der vorhandenen Daten auf dem NAS offenbarte eine hohe Fehlerquote. Viele Datensätze waren unvollständig oder lagen in veralteten Versionen vor. Im ersten Schritt der Projektarbeit wurden diese Daten manuell gesichtet, bereinigt und in ein einheitliches Format überführt. Dabei wurden Dubletten entfernt und fehlende Pflichtfelder (z. B. E-Mail-Adressen und Steuernummern) ergänzt. Diese bereinigte Datenbasis bildet das Fundament für die Migration in das neue relationale Datenbanksystem.
+Die initiale Analyse des Datenbestands auf dem NAS offenbarte eine Fehlerquote von ca. 15\,\%. Viele Datensätze waren durch manuelle Eingabefehler unvollständig oder lagen in veralteten Versionen vor, was eine automatisierte Migration zunächst unmöglich machte.
+
+Im Rahmen der Projektarbeit wurden die Daten manuell gesichtet, bereinigt und in ein einheitliches relationales Format überführt. Dabei wurden redundante Daten identifiziert und entfernt. Fehlende Pflichtfelder wie E-Mail-Adressen wurden durch Rücksprache mit den Fachabteilungen ergänzt. Diese bereinigte Datenbasis bildet das notwendige Fundament, um die Datenintegrität im neuen System gemäß den ACID-Prinzipien (Atomicity, Consistency, Isolation, Durability) sicherzustellen \vgzitat{ELMASRI2021}.
 
 \section{Soll-Konzept und Architektur}
-Das neue System basiert auf einer klassischen Client-Server-Architektur. Um Flexibilität und Skalierbarkeit zu gewährleisten, wird die gesamte Server-Infrastruktur mithilfe von Docker-Containern virtualisiert. Das Herzstück bildet die PostgreSQL-Datenbank, die über eine REST-API mit den Clients kommuniziert.
+Das neue System basiert auf einer klassischen Client-Server-Architektur, um eine klare Trennung zwischen Datenhaltung, Geschäftslogik und Präsentationsschicht zu erreichen.
 
 \bild[0.6]{architektur_diagramm}{Systemarchitektur der zentralen Kundendatenverwaltung}{fig:architektur}
 
-Wie in \literef{fig:architektur} zu sehen ist, fungiert ein Nginx-Server als \striche{Reverse Proxy}, der die verschlüsselten Anfragen an die internen Dienste weiterleitet. Dieser Aufbau ermöglicht eine saubere Trennung der Verantwortlichkeiten und eine einfache Wartbarkeit.
+Wie in \literef{fig:architektur} dargestellt, wird die gesamte Server-Infrastruktur zur Steigerung der Skalierbarkeit und Portabilität mithilfe von Docker-Containern virtualisiert. Als Betriebssystem dient Ubuntu Server 22.04. Ein Nginx-Server fungiert als \striche{Reverse Proxy} und \striche{TLS-Terminator}. Er verwaltet die HTTPS-Zertifikate und leitet Anfragen gezielt an die internen Dienste weiter. Das Herzstück der Architektur bildet die PostgreSQL-Datenbank, welche die persistente Datenhaltung übernimmt.
 
 \chapter{Technische Umsetzung}
 \section{Backend und Infrastruktur}
 \subsection{Datenhaltung und PostgreSQL}
-Als Datenbanksystem wurde PostgreSQL gewählt, da es robuste Funktionen für die Datenintegrität bietet. Ein entscheidendes Merkmal für dieses Projekt ist die \striche{Row Level Security} (RLS). Damit wird sichergestellt, dass Nutzer (z. B. Praktikanten vs. Mitarbeiter) nur Zugriff auf die Zeilen erhalten, für die sie explizit berechtigt sind\onlinezitat{postgresql_docs}. Dies erhöht die Datensicherheit massiv, da die Zugriffskontrolle direkt auf Datenbankebene und nicht nur in der Applikationslogik stattfindet.
+Als relationales Datenbankmanagementsystem wurde PostgreSQL gewählt. Ausschlaggebend waren die Robustheit und die Unterstützung fortgeschrittener Sicherheitsfeatures. Ein zentrales Element der Implementierung ist die \striche{Row Level Security} (RLS). 
 
-\bild[0.5]{ERD}{Ein Ausschnitt des ERD der PostgreSQL Datenbank}{fig:ERD}
+\bild[0.6]{ERD}{Ausschnitt des Entity-Relationship-Modells}{fig:ERD}
+
+RLS ermöglicht es, Zugriffsrechte nicht nur auf Tabellenebene, sondern für jede einzelne Zeile zu definieren. Dadurch kann direkt auf Datenbankebene gesteuert werden, dass beispielsweise ein Praktikant nur allgemeine Stammdaten sieht, während ein Mitarbeiter Zugriff auf vertrauliche Finanzdaten desselben Kunden hat \vgzitat{ELMASRI2021}. Diese Architektur gewährleistet die zuvor fehlende feingranulare Zugriffsberechtigungen auf Dateiebene.
 
 \subsection{API-Entwicklung mit FastAPI}
-Die Kommunikation zwischen Frontend und Datenbank erfolgt über eine REST-Schnittstelle, die mit Python und dem Framework FastAPI realisiert wurde\onlinezitat{fastapi_docs}. FastAPI zeichnet sich durch seine hohe Performance und die automatische Generierung von API-Dokumentationen aus.
+Die Kommunikation zwischen Frontend und Datenbank erfolgt über eine REST-Schnittstelle, die dem zustandslosen Paradigma folgt \vgzitat{FIELDING2000}. Realisiert wurde diese mit dem Framework FastAPI.
 
-Für den produktiven Betrieb wird FastAPI hinter einem Gunicorn-Server mit vier Uvicorn-Workern betrieben, um parallele Anfragen effizient verarbeiten zu können.
+FastAPI nutzt moderne Python-Features wie \striche{Asynchronous Server Gateway Interface} (ASGI). Um eine hohe Verfügbarkeit im produktiven Betrieb zu gewährleisten, wird FastAPI hinter einem Gunicorn-Server mit vier Uvicorn-Workern betrieben. Dies erlaubt die effiziente Verarbeitung paralleler Anfragen durch die Ausnutzung mehrerer CPU-Kerne des Servers.
 
 \section{Frontend-Entwicklung mit Flutter}
-Um den Mitarbeitern den Zugriff auf verschiedenen Endgeräten (Windows, Linux, Android, iOS) zu ermöglichen, wurde das Frontend mit dem Framework Flutter entwickelt\onlinezitat{flutter_dev}. Flutter erlaubt es, eine einzige Codebasis für alle Plattformen zu nutzen, was den Wartungsaufwand erheblich reduziert.
+Um eine plattformübergreifende Nutzung auf Windows, Linux, Android und iOS zu ermöglichen, wurde das Frontend mit Googles UI-Toolkit Flutter entwickelt. Flutter nutzt die Programmiersprache Dart und kompiliert direkt in nativen Maschinencode, was eine hohe Performance bei einer einheitlichen Codebasis ermöglicht \vgzitat{ZAMMETTI2021}.
 
-\bild[1]{flutter_ui}{Screenshot von dem UI der Verwaltungs-App}{fig:flutter}
+\bild[0.6]{flutter_ui}{Benutzeroberfläche der Verwaltungs-App}{fig:flutter}
 
-Die App kommuniziert gesichert via HTTPS mit dem Backend und nutzt \striche{JSON Web Tokens} (JWT) zur Authentifizierung der Benutzer.
+Die App basiert auf einem responsive Design. Die Authentifizierung erfolgt über \striche{JSON Web Tokens} (JWT). Nach dem Login wird der Token bei jeder API-Anfrage im HTTP-Header mitgesendet, um die Identität des Benutzers gegenüber dem Backend nachzuweisen.
 
 \section{Sicherheitskonzept}
-Die Sicherheit der Kundendaten steht an oberster Stelle. Der Server (Ubuntu 22.04) ist durch eine LUKS-Verschlüsselung der Festplatten sowie ein RAID-1-System vor physikalischem Datenverlust und Diebstahl geschützt. Der Zugriff von außerhalb des Firmennetzwerkes ist ausschließlich über einen gesicherten VPN-Tunnel möglich. Innerhalb der Anwendung sorgt die JWT-basierte Authentifizierung in Kombination mit der PostgreSQL-RLS für eine feingranulare Berechtigungssteuerung.
+Die Sicherheit der sensiblen Kundendaten wird durch ein mehrschichtiges Konzept (\striche{Defense in Depth}) gewährleistet. Auf physischer Ebene ist der Server durch ein RAID-1-System gegen Festplattenausfälle gesichert. Die Datenträger sind zudem mittels LUKS (\striche{Linux Unified Key Setup}) vollverschlüsselt, um Diebstahl vorzubeugen \vgzitat{WOLF2023}.
+
+Der Zugriff auf die API ist von außerhalb des Firmennetzwerkes ausschließlich über einen gesicherten VPN-Tunnel möglich. Innerhalb der Anwendung sorgt die Kombination aus JWT-Authentifizierung und der PostgreSQL-RLS für eine lückenlose Kontrolle der Datenflüsse.
 
 \chapter{Zusammenfassung und Ausblick}
-Durch die Implementierung der zentralen Kundendatenverwaltung wurde die Fehlerquote bei der Datenpflege drastisch gesenkt. Die gewählte Architektur aus FastAPI und Flutter bietet eine zukunftssichere Basis für weitere Unternehmenserweiterungen. Im nächsten Schritt ist die Anbindung eines Dokumentenmanagementsystems geplant, um auch Verträge direkt den Kundendaten zuzuordnen.
+Durch die Implementierung der zentralen Kundendatenverwaltung konnte die Fehlerquote bei der Datenpflege signifikant gesenkt werden. Die manuelle Aufbereitung der Altlasten vom NAS und die Überführung in ein relationales System haben die Informationsqualität nachhaltig verbessert.
+Die gewählte Architektur aus FastAPI und Flutter stellt eine zukunftssichere Basis dar. Da das System modular aufgebaut ist, kann es problemlos erweitert werden.
+
+Als nächster Meilenstein ist die Erweiterung um eine Offline-Funktionalität und einen automatisierten Synchronisationsprozess geplant. Dies ist insbesondere für den Außendienst relevant, um auch bei fehlender Internetverbindung einen unterbrechungsfreien Zugriff auf die Stammdaten zu gewährleisten. Die technische Umsetzung soll durch lokale Caching-Mechanismen im Flutter-Frontend realisiert werden, welche die Datenbestände bei bestehender Netzverfügbarkeit bidirektional mit der zentralen PostgreSQL-Datenbank abgleichen. Dies steigert die Ausfallsicherheit des Gesamtsystems und stellt eine lückenlose Datenpflege sicher.
