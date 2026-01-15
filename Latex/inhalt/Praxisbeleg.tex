@@ -21,17 +21,17 @@ Wie in \literef{fig:architektur} zu sehen ist, fungiert ein Nginx-Server als \st
 \subsection{Datenhaltung und PostgreSQL}
 Als Datenbanksystem wurde PostgreSQL gewählt, da es robuste Funktionen für die Datenintegrität bietet. Ein entscheidendes Merkmal für dieses Projekt ist die \striche{Row Level Security} (RLS). Damit wird sichergestellt, dass Nutzer (z. B. Praktikanten vs. Mitarbeiter) nur Zugriff auf die Zeilen erhalten, für die sie explizit berechtigt sind\onlinezitat{postgresql_docs}. Dies erhöht die Datensicherheit massiv, da die Zugriffskontrolle direkt auf Datenbankebene und nicht nur in der Applikationslogik stattfindet.
 
+\bild[0.5]{ERD}{Ein Ausschnitt des ERD der PostgreSQL Datenbank}{fig:ERD}
+
 \subsection{API-Entwicklung mit FastAPI}
 Die Kommunikation zwischen Frontend und Datenbank erfolgt über eine REST-Schnittstelle, die mit Python und dem Framework FastAPI realisiert wurde\onlinezitat{fastapi_docs}. FastAPI zeichnet sich durch seine hohe Performance und die automatische Generierung von API-Dokumentationen aus.
-
-\bild[0.6]{fastapi_swagger}{Automatische API-Dokumentation der Kundendaten-Schnittstelle}{fig:fastapi}
 
 Für den produktiven Betrieb wird FastAPI hinter einem Gunicorn-Server mit vier Uvicorn-Workern betrieben, um parallele Anfragen effizient verarbeiten zu können.
 
 \section{Frontend-Entwicklung mit Flutter}
 Um den Mitarbeitern den Zugriff auf verschiedenen Endgeräten (Windows, Linux, Android, iOS) zu ermöglichen, wurde das Frontend mit dem Framework Flutter entwickelt\onlinezitat{flutter_dev}. Flutter erlaubt es, eine einzige Codebasis für alle Plattformen zu nutzen, was den Wartungsaufwand erheblich reduziert.
 
-\bild[0.6]{flutter_ui}{Benutzeroberfläche der Verwaltungs-App unter Windows}{fig:flutter}
+\bild[1]{flutter_ui}{Screenshot von dem UI der Verwaltungs-App}{fig:flutter}
 
 Die App kommuniziert gesichert via HTTPS mit dem Backend und nutzt \striche{JSON Web Tokens} (JWT) zur Authentifizierung der Benutzer.
 
