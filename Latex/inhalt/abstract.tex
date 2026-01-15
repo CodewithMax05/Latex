@@ -26,10 +26,7 @@
 Ziel der Arbeit war die Ablösung einer inkonsistenten Dateispeicherung von Kundendaten auf einem NAS durch eine zentrale, datenbankgestützte Anwendung. Dabei sollten Redundanzen eliminiert, die Datensicherheit erhöht und ein plattformunabhängiger Zugriff für verschiedene Endgeräte ermöglicht werden.\\
 
 \textbf{Methodik}\\
-Es wurde eine Client-Server-Architektur konzipiert. Serverseitig kommt ein Ubuntu-System mit Docker-Containern zum Einsatz, welches eine PostgreSQL-Datenbank und eine REST-API mittels Python (FastAPI) bereitstellt. Das Frontend soll als Cross-Platform-Applikation mit Flutter entwickelt werden. Die Sicherheit wird durch RAID-Technologie, LUKS-Festplattenverschlüsselung, JWT-Authentifizierung und Row Level Security (RLS) gewährleistet. Zudem ist der Server nur aus dem firmeninternen Netzwerk erreichbar oder über einen VPN von außerhalb.\\
-
-\textbf{Ergebnisse}\\
-Die Umstellung auf die diese Lösung professionalisiert den Umgang mit Kundendaten im Unternehmen maßgeblich. Die gewählte Container-Architektur ist skalierbar und erweiterbar. Der wichtigste Aspekt der Lösung ist der vereinfachte Zugriff auf die Daten und deren Verwaltung.
+Es wurde eine Client-Server-Architektur konzipiert. Serverseitig kommt ein Ubuntu-System mit Docker-Containern zum Einsatz, welches eine PostgreSQL-Datenbank und eine REST-API mittels Python (FastAPI) bereitstellt. Das Frontend soll als Cross-Platform-Applikation mit Flutter entwickelt werden. Die Datensicherheit wird durch RAID-Technologie, LUKS-Festplattenverschlüsselung, JWT-Authentifizierung und Row Level Security (RLS) gewährleistet. Zudem ist der Server nur aus dem firmeninternen Netzwerk oder über einen VPN von außerhalb erreichbar.\\
 
 \KOMAoption{headsepline}{true}
 \cleardoublepage
